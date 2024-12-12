@@ -469,3 +469,70 @@ class Attack(pygame.sprite.Sprite):
         if self.travelled >= self.max_distance:
             self.kill()
 
+class Portal(pygame.sprite.Sprite):
+    def __init__(self, game, x, y):
+        self.game = game
+        self._layer = config.player_layer  # Define layer for rendering order
+        self.groups = self.game.all_sprites, self.game.portals  # Add to appropriate groups
+        pygame.sprite.Sprite.__init__(self, self.groups)
+
+        self.x = x * config.tile_size
+        self.y = y * config.tile_size
+        self.width = config.tile_size
+        self.height = config.tile_size
+
+        # Sprite image and animations
+        self.image = trans_img(self.game.portal_spritesheet.get_sprite(0, 0, 32, 32))
+        self.rect = self.image.get_rect()
+        self.rect.x = self.x
+        self.rect.y = self.y
+
+        self.animation_frames = [
+            self.game.portal_spritesheet.get_sprite(0, 0, 32, 32),
+            self.game.portal_spritesheet.get_sprite(32, 0, 32, 32),
+            self.game.portal_spritesheet.get_sprite(64, 0, 32, 32),
+            self.game.portal_spritesheet.get_sprite(0, 32, 32, 32),
+            self.game.portal_spritesheet.get_sprite(32, 32, 32, 32),
+            self.game.portal_spritesheet.get_sprite(64, 32, 32, 32)
+        ]
+        self.animation_index = 0
+        self.animation_speed = 0.2
+
+    def update(self):
+        # Handle animation
+        self.animate()
+
+        # Check for collision with the player
+        if pygame.sprite.collide_rect(self, self.game.player):
+            self.on_player_collision()
+
+    def animate(self):
+        # Cycle through portal animation frames.
+        self.animation_index += self.animation_speed
+        if self.animation_index >= len(self.animation_frames):
+            self.animation_index = 0
+        self.image = self.animation_frames[int(self.animation_index)]
+
+    def on_player_collision(self):
+        # Do what on player collision
+        print("Player entered the portal! Level Complete!")
+        self.game.playing = False
+
+    @staticmethod
+    def check_and_spawn(game):
+        # Check if enemies dead and spawn portal
+        if len(game.enemies) == 0 and not game.portal_spawned:
+            game.portal_spawned = True  # Mark that the portal has been spawned
+            # Find all valid positions (where the tile is '.')
+            valid_positions = []
+            for y, row in enumerate(config.tilemap):
+                for x, column in enumerate(row):
+                    if column == '.':
+                        valid_positions.append((x, y))
+
+            # Randomly select a position
+            if valid_positions:  # Ensure there are valid positions
+                portal_x, portal_y = random.choice(valid_positions)
+
+                # Spawn the portal
+                Portal(game, portal_x, portal_y)

@@ -7,7 +7,7 @@ if __name__ == '__main__':
     current_game.intro_screen()
     current_game.new()
     while current_game.running:
-        current_game.main()
+        current_game.main() 
         current_game.game_over()
 
 pygame.quit()

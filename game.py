@@ -18,6 +18,7 @@ class Game:
         self.floor_spritesheet = sprites.Spritesheet('assets/terrain/TilesetInteriorFloor.png')
         self.shaman_spritesheet = sprites.Spritesheet('assets/enemies/shaman.png')
         self.attack_spritesheet = sprites.Spritesheet('assets/throwable/Shuriken.png')
+        self.portal_spritesheet = sprites.Spritesheet('assets/portal.png')
 
         # Loading start and end game background
         self.intro_background = pygame.image.load('assets/background.jpg')
@@ -28,6 +29,9 @@ class Game:
 
         # Attack timer
         self.last_attack_time = 0  # Initialize the last attack time
+
+        # Set default portal spawn
+        self.portal_spawned = False
 
     def create_tilemap(self):
         for y, row in enumerate(config.tilemap):
@@ -44,11 +48,15 @@ class Game:
         # New game start
         self.playing = True
 
+        # Reset portal
+        self.portal_spawned = False
+
         # Sprite groups
         self.all_sprites = pygame.sprite.LayeredUpdates()
         self.blocks = pygame.sprite.LayeredUpdates()
         self.enemies = pygame.sprite.LayeredUpdates()
         self.attacks = pygame.sprite.LayeredUpdates()
+        self.portals = pygame.sprite.LayeredUpdates()
 
         # Draw tilemap
         self.create_tilemap()
@@ -76,7 +84,7 @@ class Game:
                     self.attack_direction = self.player.facing  # Use the player's facing direction
 
                     current_time = pygame.time.get_ticks()  # Get current time in milliseconds
-                    if current_time - self.last_attack_time > 400:  # cooldown (adjust as needed)
+                    if current_time - self.last_attack_time > 200:  # cooldown (adjust as needed)
                         self.last_attack_time = current_time
 
                         # Launch an attack in the direction the player is facing
@@ -92,6 +100,9 @@ class Game:
     def update(self):
         # Game loop updates
         self.all_sprites.update()
+
+        # Check if the portal needs to be spawned
+        sprites.Portal.check_and_spawn(self)
 
     def draw(self):
         # Draw game loop
