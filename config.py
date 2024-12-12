@@ -7,7 +7,7 @@ enemy_layer = 3
 block_layer = 2
 ground_layer = 1
 
-player_speed = 3
+player_speed = 2
 enemy_speed = 2
 
 red = (255, 0, 0)

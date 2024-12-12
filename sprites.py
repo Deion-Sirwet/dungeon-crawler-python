@@ -108,6 +108,12 @@ class Player(pygame.sprite.Sprite):
             self.x_change += config.player_speed
             self.facing = 'right'
 
+        # Change player speed when LSHIFT is held
+        if keys[pygame.K_LSHIFT]:
+            config.player_speed = 4
+        else:
+            config.player_speed = 2
+
     def collide_blocks(self, direction):
         if direction == "x":
             hits = pygame.sprite.spritecollide(self, self.game.blocks, False)
@@ -139,12 +145,18 @@ class Player(pygame.sprite.Sprite):
             self.game.playing = False
 
     def animate(self):
+        # Change animation speed if shift is held down
+        if pygame.key.get_pressed()[pygame.K_LSHIFT]:
+            animation_speed = 0.25  # Faster animation speed when shift is held
+        else:
+            animation_speed = 0.125  # Default animation speed
+
         if self.facing == "down":
             if self.y_change == 0:
                 self.image = trans_img(self.game.character_spritesheet.get_sprite(0, 0, 16, 16))
             else:
                 self.image = self.down_animations[math.floor(self.animation_loop)]
-                self.animation_loop += 0.25
+                self.animation_loop += animation_speed
                 if self.animation_loop >= 4:
                     self.animation_loop = 1
 
@@ -153,7 +165,7 @@ class Player(pygame.sprite.Sprite):
                 self.image = trans_img(self.game.character_spritesheet.get_sprite(16, 0, 16, 16))
             else:
                 self.image = self.up_animations[math.floor(self.animation_loop)]
-                self.animation_loop += 0.25
+                self.animation_loop += animation_speed
                 if self.animation_loop >= 4:
                     self.animation_loop = 1
 
@@ -162,7 +174,7 @@ class Player(pygame.sprite.Sprite):
                 self.image = trans_img(self.game.character_spritesheet.get_sprite(32, 0, 16, 16))
             else:
                 self.image = self.left_animations[math.floor(self.animation_loop)]
-                self.animation_loop += 0.25
+                self.animation_loop += animation_speed
                 if self.animation_loop >= 4:
                     self.animation_loop = 1
 
@@ -171,9 +183,10 @@ class Player(pygame.sprite.Sprite):
                 self.image = trans_img(self.game.character_spritesheet.get_sprite(48, 0, 16, 16))
             else:
                 self.image = self.right_animations[math.floor(self.animation_loop)]
-                self.animation_loop += 0.25
+                self.animation_loop += animation_speed
                 if self.animation_loop >= 4:
                     self.animation_loop = 1
+
 
 class Enemy(pygame.sprite.Sprite):
     def __init__(self, game, x, y):
@@ -314,7 +327,7 @@ class Enemy(pygame.sprite.Sprite):
                 self.image = trans_img(self.game.shaman_spritesheet.get_sprite(0, 0, 16, 16))
             else:
                 self.image = self.down_animations[math.floor(self.animation_loop)]
-                self.animation_loop += 0.25
+                self.animation_loop += 0.2
                 if self.animation_loop >= 4:
                     self.animation_loop = 1
 
@@ -323,7 +336,7 @@ class Enemy(pygame.sprite.Sprite):
                 self.image = trans_img(self.game.shaman_spritesheet.get_sprite(16, 0, 16, 16))
             else:
                 self.image = self.up_animations[math.floor(self.animation_loop)]
-                self.animation_loop += 0.25
+                self.animation_loop += 0.2
                 if self.animation_loop >= 4:
                     self.animation_loop = 1
 
@@ -332,7 +345,7 @@ class Enemy(pygame.sprite.Sprite):
                 self.image = trans_img(self.game.shaman_spritesheet.get_sprite(32, 0, 16, 16))
             else:
                 self.image = self.left_animations[math.floor(self.animation_loop)]
-                self.animation_loop += 0.25
+                self.animation_loop += 0.2
                 if self.animation_loop >= 4:
                     self.animation_loop = 1
 
@@ -341,7 +354,7 @@ class Enemy(pygame.sprite.Sprite):
                 self.image = trans_img(self.game.shaman_spritesheet.get_sprite(48, 0, 16, 16))
             else:
                 self.image = self.right_animations[math.floor(self.animation_loop)]
-                self.animation_loop += 0.25
+                self.animation_loop += 0.2
                 if self.animation_loop >= 4:
                     self.animation_loop = 1
 
@@ -520,9 +533,10 @@ class Portal(pygame.sprite.Sprite):
 
     @staticmethod
     def check_and_spawn(game):
-        # Check if enemies dead and spawn portal
+        """Check if all enemies are defeated and spawn the portal at a random '.' location."""
         if len(game.enemies) == 0 and not game.portal_spawned:
             game.portal_spawned = True  # Mark that the portal has been spawned
+
             # Find all valid positions (where the tile is '.')
             valid_positions = []
             for y, row in enumerate(config.tilemap):
@@ -532,7 +546,12 @@ class Portal(pygame.sprite.Sprite):
 
             # Randomly select a position
             if valid_positions:  # Ensure there are valid positions
-                portal_x, portal_y = random.choice(valid_positions)
+                tile_x, tile_y = random.choice(valid_positions)
 
-                # Spawn the portal
-                Portal(game, portal_x, portal_y)
+                # Convert tilemap coordinates to pixel coordinates
+                portal_x = tile_x * config.tile_size
+                portal_y = tile_y * config.tile_size
+
+                # Spawn the portal at the correct pixel location
+                Portal(game, portal_x // config.tile_size, portal_y // config.tile_size)
+
