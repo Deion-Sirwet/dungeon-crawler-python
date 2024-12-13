@@ -30,9 +30,6 @@ class Game:
         # Attack timer
         self.last_attack_time = 0  # Initialize the last attack time
 
-        # Set default portal spawn
-        self.portal_spawned = False
-
     def create_tilemap(self):
         for y, row in enumerate(config.tilemap):
             for x, column in enumerate(row):
@@ -43,13 +40,12 @@ class Game:
                     self.player = sprites.Player(self, x, y)
                 if column == "E":
                     sprites.Enemy(self, x, y)
+                if column == "L":
+                    self.portal = sprites.Portal(self, x, y)
 
     def new(self):
         # New game start
         self.playing = True
-
-        # Reset portal
-        self.portal_spawned = False
 
         # Sprite groups
         self.all_sprites = pygame.sprite.LayeredUpdates()
@@ -101,8 +97,8 @@ class Game:
         # Game loop updates
         self.all_sprites.update()
 
-        # Check if the portal needs to be spawned
-        sprites.Portal.check_and_spawn(self)
+        # Game events and updates
+        sprites.Portal.check_portal_activation(self.portal, self.enemies)
 
     def draw(self):
         # Draw game loop
