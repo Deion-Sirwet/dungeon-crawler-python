@@ -2,6 +2,7 @@ import pygame
 import sprites
 import config
 import game_button
+import camera
 import sys
 
 class Game:
@@ -11,6 +12,8 @@ class Game:
         self.clock = pygame.time.Clock()
         self.font = pygame.font.Font("Arial.TTF", 60)
         self.running = True
+        self.camera = camera.Camera(config.screen_width, config.screen_height)
+
 
         # Loading spritesheets
         self.character_spritesheet = sprites.Spritesheet('assets/character/SpriteSheet.png')
@@ -51,6 +54,13 @@ class Game:
                     self.portal = sprites.Portal(self, x, y)
 
     def new(self):
+        # Calculate the map size
+        self.map_width = len(config.tilemaps[self.current_level_index][0]) * config.tile_size
+        self.map_height = len(config.tilemaps[self.current_level_index]) * config.tile_size
+
+        # Initialize the camera
+        self.camera = camera.Camera(self.map_width, self.map_height)
+
         # New game start
         self.playing = True
 
@@ -107,18 +117,28 @@ class Game:
         # Game events and updates
         sprites.Portal.check_portal_activation(self.portal, self.enemies)
 
+        # Update camera on player
+        self.camera.center_on_player(self.player)  # Or use box_camera(self.player)
+
+
     def draw(self):
-        # Draw game loop
+        # Clear the screen
         self.screen.fill(config.black)
 
-        # Draw all sprites
-        self.all_sprites.draw(self.screen)
+        # Draw all sprites with the camera offset
+        for sprite in self.all_sprites:
+            offset_pos = sprite.rect.topleft - self.camera.offset
+            self.screen.blit(sprite.image, offset_pos)
 
-        # Draw health bars for each enemy
+        # Draw health bars for each enemy (apply camera offset)
         for enemy in self.enemies:
-            enemy.draw_health_bar(self.screen)
+            enemy.draw_health_bar(self.screen, self.camera.offset)
+
+
+        # Limit FPS and update the display
         self.clock.tick(config.fps)
         pygame.display.update()
+
 
     def main(self):
         # Game loop

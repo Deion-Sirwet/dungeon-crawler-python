@@ -86,26 +86,18 @@ class Player(pygame.sprite.Sprite):
     def movement(self):
         keys = pygame.key.get_pressed()
 
-        # Move the character based on key presses
+        # Move the player based on key presses
         if keys[pygame.K_w]:
-            for sprite in self.game.all_sprites:
-                sprite.rect.y += config.player_speed
-            self.y_change -= config.player_speed
+            self.y_change = -config.player_speed
             self.facing = 'up'
         if keys[pygame.K_s]: 
-            for sprite in self.game.all_sprites:
-                sprite.rect.y -= config.player_speed 
-            self.y_change += config.player_speed
+            self.y_change = config.player_speed
             self.facing = 'down'
         if keys[pygame.K_a]:
-            for sprite in self.game.all_sprites:
-                sprite.rect.x += config.player_speed 
-            self.x_change -= config.player_speed
+            self.x_change = -config.player_speed
             self.facing = 'left'
         if keys[pygame.K_d]:
-            for sprite in self.game.all_sprites:
-                sprite.rect.x -= config.player_speed
-            self.x_change += config.player_speed
+            self.x_change = config.player_speed
             self.facing = 'right'
 
         # Change player speed when LSHIFT is held
@@ -119,24 +111,16 @@ class Player(pygame.sprite.Sprite):
             hits = pygame.sprite.spritecollide(self, self.game.blocks, False)
             if hits:
                 if self.x_change > 0:
-                    self.rect.x = hits[0].rect.left - self.rect.width
-                    for sprite in self.game.all_sprites:
-                        sprite.rect.x += config.player_speed
+                    self.rect.right = hits[0].rect.left
                 if self.x_change < 0:
-                    self.rect.x = hits[0].rect.right
-                    for sprite in self.game.all_sprites:
-                        sprite.rect.x -= config.player_speed 
+                    self.rect.left = hits[0].rect.right
         if direction == "y":
             hits = pygame.sprite.spritecollide(self, self.game.blocks, False)
             if hits:
                 if self.y_change > 0:
-                    self.rect.y = hits[0].rect.top - self.rect.height
-                    for sprite in self.game.all_sprites:
-                        sprite.rect.y += config.player_speed
+                    self.rect.bottom = hits[0].rect.top
                 if self.y_change < 0:
-                    self.rect.y = hits[0].rect.bottom
-                    for sprite in self.game.all_sprites:
-                        sprite.rect.y -= config.player_speed
+                    self.rect.top = hits[0].rect.bottom
 
     def collide_enemy(self):
         hits = pygame.sprite.spritecollide(self, self.game.enemies, False)
@@ -358,12 +342,18 @@ class Enemy(pygame.sprite.Sprite):
                 if self.animation_loop >= 4:
                     self.animation_loop = 1
 
-    def draw_health_bar(self, surface):
-        # Draw health bar background (gray)
-        pygame.draw.rect(surface, (255, 0, 0), (self.rect.x, self.rect.y - 10, self.health_bar_width, self.health_bar_height))
-        # Draw health bar foreground (green)
+    def draw_health_bar(self, surface, offset):
+        # Adjust health bar position using the camera offset
+        health_bar_x = self.rect.x - offset.x
+        health_bar_y = self.rect.y - 10 - offset.y
+
+        # Draw health bar background (red)
+        pygame.draw.rect(surface, (255, 0, 0), (health_bar_x, health_bar_y, self.health_bar_width, self.health_bar_height))
+
+        # Calculate health percentage and draw foreground (green)
         health_width = self.health_bar_width * (self.health / self.max_health)
-        pygame.draw.rect(surface, (0, 255, 0), (self.rect.x, self.rect.y - 10, health_width, self.health_bar_height))
+        pygame.draw.rect(surface, (0, 255, 0), (health_bar_x, health_bar_y, health_width, self.health_bar_height))
+
 
 class Block(pygame.sprite.Sprite):
     def __init__(self, game, x, y):
