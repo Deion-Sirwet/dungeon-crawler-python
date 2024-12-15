@@ -17,7 +17,8 @@ blue = (0, 0, 255)
 
 fps = 60
 
-tilemap = [
+tilemaps = [
+    [
     'BBBBBBBBBBBBBBBBBBBBBBBBB',
     'B.......................B',
     'B..BBBBB.....BB...BBB...B',
@@ -37,4 +38,26 @@ tilemap = [
     'B...BBBB........B....L..B',
     'B.......................B',
     'BBBBBBBBBBBBBBBBBBBBBBBBB',
+    ],
+    [
+    'BBBBBBBBBBBBBBBBBBBBBBBBB',
+    'B.....B.....E...........B',
+    'B..L..B......BB...BBB...B',
+    'B.....B.......B..B......B',
+    'B.....B...BBBBB....BB...B',
+    'B.......................B',
+    'B....BBBBBBBB...........B',
+    'B...............B.....BBB',
+    'B.....B....BBBBBB.......B',
+    'B.....B.........B.......B',
+    'B.....B..E......BBBB....B',
+    'B.....B.........B.......B',
+    'B.....B.............P...B',
+    'B.......................B',
+    'B......BBB...BBBB.......B',
+    'B..................B....B',
+    'B.......E..........B....B',
+    'B..................B....B',
+    'BBBBBBBBBBBBBBBBBBBBBBBBB',
+    ]
 ]

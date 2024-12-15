@@ -535,7 +535,14 @@ class Portal(pygame.sprite.Sprite):
         if self.is_active:
             # Do what on player collision
             print("Player entered the portal! Level Complete!")
-            self.game.playing = False
+            # Check if there's a next level
+            if self.game.current_level_index + 1 < len(config.tilemaps):
+                self.game.current_level_index += 1  # Increment level index
+                print(f"Loading next level: {self.game.current_level_index + 1}")
+                self.game.new()  # Load the next level
+            else:
+                print("No more levels! Congratulations, you've completed the game!")
+                self.game.playing = False  # Stop the main game loop
 
     def check_portal_activation(portal, enemies):
         if not enemies:  # If the enemy group is empty

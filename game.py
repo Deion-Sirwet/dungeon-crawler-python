@@ -9,7 +9,7 @@ class Game:
         pygame.init()
         self.screen = pygame.display.set_mode((config.screen_width, config.screen_height))
         self.clock = pygame.time.Clock()
-        self.font = pygame.font.Font("Arial.TTF", 32)
+        self.font = pygame.font.Font("Arial.TTF", 60)
         self.running = True
 
         # Loading spritesheets
@@ -24,14 +24,21 @@ class Game:
         self.intro_background = pygame.image.load('assets/background.jpg')
         self.intro_background = pygame.transform.scale(self.intro_background, (config.screen_width, config.screen_height))
 
+        self.game_over_bg = pygame.image.load('assets/game_over.jpg')
+        self.game_over_bg = pygame.transform.scale(self.game_over_bg, (config.screen_width, config.screen_height))
+
         # Default attack direction
         self.attack_direction = 'down'
 
         # Attack timer
         self.last_attack_time = 0  # Initialize the last attack time
 
+        # Current/Start level
+        self.current_level_index = 0
+
     def create_tilemap(self):
-        for y, row in enumerate(config.tilemap):
+        tilemap = config.tilemaps[self.current_level_index]
+        for y, row in enumerate(tilemap):
             for x, column in enumerate(row):
                 sprites.Ground(self, x, y)
                 if column == "B":
@@ -121,10 +128,10 @@ class Game:
             self.draw()
 
     def game_over(self):
-        text = self.font.render('Game Over', True, config.white)
-        text_rect = text.get_rect(x = 320, y = 200)
+        # text = self.font.render('Game Over', True, config.white)
+        # text_rect = text.get_rect(x = 325, y = 200)
 
-        restart_button = game_button.Button(360, 250, 100, 50, config.black, config.white, 'Restart', 32)
+        restart_button = game_button.Button(360, 350, 100, 50, config.black, config.white, 'Restart', 32)
 
         for sprite in self.all_sprites:
             sprite.kill()
@@ -141,8 +148,8 @@ class Game:
                 self.new()
                 self.main()
 
-            self.screen.blit(self.intro_background, (0, 0))
-            self.screen.blit(text, text_rect)
+            self.screen.blit(self.game_over_bg, (0, 0))
+            # self.screen.blit(text, text_rect)
             self.screen.blit(restart_button.image, restart_button.rect)
             self.clock.tick(config.fps)
             pygame.display.update()
@@ -151,10 +158,10 @@ class Game:
     def intro_screen(self):
         intro = True
 
-        title = self.font.render('Dungeon Crawler', True, config.white)
-        title_rect = title.get_rect(x = 290, y = 200)
+        title = self.font.render('Void Step', True, config.white)
+        title_rect = title.get_rect(x = 280, y = 200)
 
-        play_button = game_button.Button(360, 250, 100, 50, config.black, config.white, 'Play', 32)
+        play_button = game_button.Button(360, 350, 100, 50, config.black, config.white, 'Play', 32)
 
         while intro:
             for event in pygame.event.get():
