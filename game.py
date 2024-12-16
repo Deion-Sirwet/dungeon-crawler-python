@@ -3,7 +3,6 @@ import sprites
 import config
 import game_button
 import camera
-import sys
 
 class Game:
     def __init__(self):
@@ -85,34 +84,34 @@ class Game:
                 self.running = False
                 pygame.quit()
 
-            # Update attack direction based on arrow key presses
             if event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_UP:
-                    self.attack_direction = 'up'
-                elif event.key == pygame.K_DOWN:
-                    self.attack_direction = 'down'
-                elif event.key == pygame.K_LEFT:
-                    self.attack_direction = 'left'
-                elif event.key == pygame.K_RIGHT:
-                    self.attack_direction = 'right'
+                # Update attack direction based on arrow key presses
+                # if event.key == pygame.K_UP:
+                #     self.attack_direction = 'up'
+                # elif event.key == pygame.K_DOWN:
+                #     self.attack_direction = 'down'
+                # elif event.key == pygame.K_LEFT:
+                #     self.attack_direction = 'left'
+                # elif event.key == pygame.K_RIGHT:
+                #     self.attack_direction = 'right'
 
                 # Set the attack direction to the player's current facing direction
                 if event.key == pygame.K_SPACE:
-                    self.attack_direction = self.player.facing  # Use the player's facing direction
+                    direction = self.player.facing  # Use the player's facing direction
 
                     current_time = pygame.time.get_ticks()  # Get current time in milliseconds
                     if current_time - self.last_attack_time > 200:  # cooldown (adjust as needed)
                         self.last_attack_time = current_time
 
                         # Launch an attack in the direction the player is facing
-                        if self.attack_direction == 'up':
-                            sprites.Attack(self, self.player.rect.x, self.player.rect.y - 16, self.attack_direction)
-                        elif self.attack_direction == 'down':
-                            sprites.Attack(self, self.player.rect.x, self.player.rect.y + 16, self.attack_direction)
-                        elif self.attack_direction == 'left':
-                            sprites.Attack(self, self.player.rect.x - 16, self.player.rect.y, self.attack_direction)
-                        elif self.attack_direction == 'right':
-                            sprites.Attack(self, self.player.rect.x + 16, self.player.rect.y, self.attack_direction)
+                        if direction == 'up':
+                            sprites.Attack(self, self.player.rect.x, self.player.rect.y - 16, direction)
+                        elif direction == 'down':
+                            sprites.Attack(self, self.player.rect.x, self.player.rect.y + 16, direction)
+                        elif direction == 'left':
+                            sprites.Attack(self, self.player.rect.x - 16, self.player.rect.y, direction)
+                        elif direction == 'right':
+                            sprites.Attack(self, self.player.rect.x + 16, self.player.rect.y, direction)
 
     def update(self):
         # Game loop updates

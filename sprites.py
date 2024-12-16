@@ -456,14 +456,14 @@ class Attack(pygame.sprite.Sprite):
             self.animation_loop = 0  # Reset the animation loop after 2 frames
 
     def move(self):
-        # Move the attack sprite based on the attack direction
-        if self.game.attack_direction == 'up':
+        # Move the attack sprite based on its individual direction
+        if self.direction == 'up':
             self.rect.y -= self.move_speed
-        elif self.game.attack_direction == 'down':
+        elif self.direction == 'down':
             self.rect.y += self.move_speed
-        elif self.game.attack_direction == 'left':
+        elif self.direction == 'left':
             self.rect.x -= self.move_speed
-        elif self.game.attack_direction == 'right':
+        elif self.direction == 'right':
             self.rect.x += self.move_speed
 
         # Track the distance traveled
