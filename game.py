@@ -30,6 +30,10 @@ class Game:
         self.game_over_bg = pygame.image.load('assets/game_over.jpg')
         self.game_over_bg = pygame.transform.scale(self.game_over_bg, (config.screen_width, config.screen_height))
 
+        # Game complete background
+        self.game_complete_bg = pygame.image.load('assets/game_complete.jpg')
+        self.game_complete_bg = pygame.transform.scale(self.game_complete_bg, (config.screen_width, config.screen_height))
+
         # Default attack direction
         self.attack_direction = 'down'
 
@@ -188,6 +192,7 @@ class Game:
                 if event.type == pygame.QUIT:
                     intro = False
                     self.running = False
+
             mouse_pos = pygame.mouse.get_pos()
             mouse_pressed = pygame.mouse.get_pressed()
             
@@ -199,3 +204,45 @@ class Game:
             self.screen.blit(play_button.image, play_button.rect)
             self.clock.tick(config.fps)
             pygame.display.update()
+
+    def game_complete(self):
+        # Clear all active sprites
+        for sprite in self.all_sprites:
+            sprite.kill()
+
+        # Game complete background (ensure `self.game_complete_bg` exists and loads correctly)
+        self.screen.blit(self.game_complete_bg, (0, 0))
+
+        # Render "Game Complete!" message
+        message = self.font.render("Game Complete!", True, (255, 255, 255))  # White text
+        message_rect = message.get_rect(x = 200, y = 200)
+        self.screen.blit(message, message_rect)
+
+        # Create a button for replaying the game
+        replay_game = game_button.Button(325, 350, 200, 50, config.black, config.white, 'Play Again', 32)
+
+        # Main loop for the "Game Complete" screen
+        while self.running:
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    self.running = False
+                    pygame.quit()
+
+            # Get mouse input
+            mouse_pos = pygame.mouse.get_pos()
+            mouse_pressed = pygame.mouse.get_pressed()
+
+            # Check if the "Play Again" button is pressed
+            if replay_game.is_pressed(mouse_pos, mouse_pressed):
+                self.current_level_index = 0  # Reset to the first level
+                self.new()  # Reset the game state
+                return  # Exit the `game_complete` method and go back to the main game loop
+
+            # Redraw the screen
+            self.screen.blit(self.game_complete_bg, (0, 0))  # Redraw the background
+            self.screen.blit(message, message_rect)  # Redraw the "Game Complete!" text
+            self.screen.blit(replay_game.image, replay_game.rect)  # Redraw the button
+
+            # Update the display
+            pygame.display.update()
+            self.clock.tick(config.fps)

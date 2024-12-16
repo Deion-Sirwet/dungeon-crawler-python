@@ -125,6 +125,7 @@ class Player(pygame.sprite.Sprite):
     def collide_enemy(self):
         hits = pygame.sprite.spritecollide(self, self.game.enemies, False)
         if hits:
+            self.game.current_level_index = 0
             self.kill()
             self.game.playing = False
 
@@ -532,7 +533,7 @@ class Portal(pygame.sprite.Sprite):
                 self.game.new()  # Load the next level
             else:
                 print("No more levels! Congratulations, you've completed the game!")
-                self.game.playing = False  # Stop the main game loop
+                self.game.game_complete()  # Stop the main game loop
 
     def check_portal_activation(portal, enemies):
         if not enemies:  # If the enemy group is empty
