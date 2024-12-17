@@ -12,6 +12,7 @@ class Game:
         self.font = pygame.font.Font("Arial.TTF", 60)
         self.running = True
         self.camera = camera.Camera(config.screen_width, config.screen_height)
+        pygame.display.set_caption("Void Step")
 
 
         # Loading spritesheets
