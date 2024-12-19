@@ -244,7 +244,7 @@ class Game:
             
             # Pause background music and play game over music
             if not self.game_over_sound_played:
-                pygame.mixer.music.pause()
+                pygame.mixer.music.stop()
                 sounds.game_over_sound.play()
                 self.game_over_sound_played = True
 
@@ -319,7 +319,7 @@ class Game:
 
             # Pause music and play game is complete sound
             if not self.game_complete_sound_played:
-                pygame.mixer.music.pause()
+                pygame.mixer.music.stop()
                 sounds.portal_sound.stop()
                 # sounds.game_complete_sound.play()
                 self.game_complete_sound_played = True
