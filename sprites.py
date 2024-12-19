@@ -2,6 +2,7 @@ import pygame
 import config
 import math
 import random
+import sounds
 
 def trans_img(self):
     return pygame.transform.scale(self, (config.tile_size, config.tile_size))
@@ -128,6 +129,7 @@ class Player(pygame.sprite.Sprite):
             self.game.current_level_index = 0
             self.kill()
             self.game.playing = False
+            sounds.death_sound.play()
 
     def animate(self):
         # Change animation speed if shift is held down
@@ -432,6 +434,7 @@ class Attack(pygame.sprite.Sprite):
                 enemy.health -= 25  # Reduce health by 25 for each enemy hit
                 if enemy.health <= 0:
                     enemy.kill()  # Optionally kill the enemy if health is 0 or below
+                    sounds.death_sound.play()
             self.kill()  # Remove attack after hitting any enemy
 
     def animate(self):
@@ -538,3 +541,9 @@ class Portal(pygame.sprite.Sprite):
     def check_portal_activation(portal, enemies):
         if not enemies:  # If the enemy group is empty
             portal.is_active = True
+            sounds.portal_sound.play(loops = -1)  # Start playing the portal sound loop
+        else:
+            # When enemies are present, deactivate the portal and stop the sound
+            portal.is_active = False
+            sounds.portal_sound.stop()  # Stop the portal sound when the portal is inactive
+

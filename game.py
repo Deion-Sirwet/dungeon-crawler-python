@@ -3,10 +3,12 @@ import sprites
 import config
 import game_button
 import camera
+import sounds
 
 class Game:
     def __init__(self):
         pygame.init()
+        pygame.mixer.init()
         self.screen = pygame.display.set_mode((config.screen_width, config.screen_height))
         self.clock = pygame.time.Clock()
         self.font = pygame.font.Font("Arial.TTF", 60)
@@ -33,6 +35,14 @@ class Game:
         # Game complete background
         self.game_complete_bg = pygame.image.load('assets/game_complete.jpg')
         self.game_complete_bg = pygame.transform.scale(self.game_complete_bg, (config.screen_width, config.screen_height))
+
+        # Create a button for toggling music
+        self.music_button = game_button.Button(10, 10, 100, 50, config.black, config.white, "ToggleMusic", 16)
+        self.music_playing = True
+
+        # Pause button
+        self.pause_button = game_button.Button(690, 10, 100, 50, config.black, config.white, "Pause", 16)
+        self.game_paused = False
 
         # Default attack direction
         self.attack_direction = 'down'
@@ -65,7 +75,9 @@ class Game:
         # Initialize the camera
         self.camera = camera.Camera(self.map_width, self.map_height)
 
-        # New game start
+        # Reset vars
+        self.game_over_sound_played = False
+        self.game_complete_sound_played = False
         self.playing = True
 
         # Sprite groups
@@ -74,6 +86,10 @@ class Game:
         self.enemies = pygame.sprite.LayeredUpdates()
         self.attacks = pygame.sprite.LayeredUpdates()
         self.portals = pygame.sprite.LayeredUpdates()
+
+        # Initialize Game Music
+        if self.music_playing:
+            sounds.play_music("assets/sounds/background_music.mp3")
 
         # Draw tilemap
         self.create_tilemap()
@@ -107,12 +123,33 @@ class Game:
                         # Launch an attack in the direction the player is facing
                         if direction == 'up':
                             sprites.Attack(self, self.player.rect.x, self.player.rect.y - 16, direction)
+                            sounds.attack_sound.play()
                         elif direction == 'down':
                             sprites.Attack(self, self.player.rect.x, self.player.rect.y + 16, direction)
+                            sounds.attack_sound.play()
                         elif direction == 'left':
                             sprites.Attack(self, self.player.rect.x - 16, self.player.rect.y, direction)
+                            sounds.attack_sound.play()
                         elif direction == 'right':
                             sprites.Attack(self, self.player.rect.x + 16, self.player.rect.y, direction)
+                            sounds.attack_sound.play()
+
+            # Get mouse input for music button
+            mouse_pos = pygame.mouse.get_pos()
+            mouse_pressed = pygame.mouse.get_pressed()
+
+            # Check if the music button is pressed
+            if self.music_button.is_pressed(mouse_pos, mouse_pressed):
+                if self.music_playing:
+                    pygame.mixer.music.stop()
+                    self.music_playing = False
+                else:
+                    pygame.mixer.music.play()
+                    self.music_playing = True
+
+            # Check if pause button is pressed
+            if self.pause_button.is_pressed(mouse_pos, mouse_pressed):
+                self.game_paused = not self.game_paused  # Toggle the pause state
 
     def update(self):
         # Game loop updates
@@ -138,18 +175,55 @@ class Game:
         for enemy in self.enemies:
             enemy.draw_health_bar(self.screen, self.camera.offset)
 
+        # Draw the toggle music button
+        self.screen.blit(self.music_button.image, self.music_button.rect)
+
+        # Draw the pause button
+        self.screen.blit(self.pause_button.image, self.pause_button.rect)
 
         # Limit FPS and update the display
         self.clock.tick(config.fps)
         pygame.display.update()
 
-
     def main(self):
         # Game loop
         while self.playing:
-            self.events()
+            self.events()  # Check for pause button click
+
+            # If the game is paused
+            if self.game_paused:
+                # Create a semi-transparent grey overlay (RGBA with alpha set to 5 for opacity)
+                overlay = pygame.Surface((config.screen_width, config.screen_height))
+                overlay.set_alpha(5)  # Set opacity (0 is fully transparent, 255 is fully opaque)
+                overlay.fill((128, 128, 128))  # Fill the overlay with grey color (RGB)
+
+                # Draw the overlay
+                self.screen.blit(overlay, (0, 0))
+
+                # Render the "Paused" text in the center of the screen
+                paused_text = self.font.render("Paused", True, (255, 255, 255))  # White text
+                paused_text_rect = paused_text.get_rect(center=(config.screen_width // 2, config.screen_height // 2))
+
+                # Draw the "Paused" text
+                self.screen.blit(paused_text, paused_text_rect)
+
+                # Draw the pause button
+                self.screen.blit(self.pause_button.image, self.pause_button.rect)
+
+                pygame.display.update()  # Update display to show pause screen
+
+                # Pause the music when the game is paused
+                pygame.mixer.music.pause()
+
+                continue  # Skip the rest of the loop (no updates, no drawing)
+
+            # Normal game updates (only happens when not paused)
             self.update()
             self.draw()
+
+            # If the game is not paused, resume the music if it's not already playing
+            if not self.game_paused:
+                pygame.mixer.music.unpause()
 
     def game_over(self):
         # text = self.font.render('Game Over', True, config.white)
@@ -160,10 +234,19 @@ class Game:
         for sprite in self.all_sprites:
             sprite.kill()
 
+        # Add a flag to check if the game over sound has been played
+        self.game_over_sound_played = False
+
         while self.running:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     self.running = False
+            
+            # Pause background music and play game over music
+            if not self.game_over_sound_played:
+                pygame.mixer.music.pause()
+                sounds.game_over_sound.play()
+                self.game_over_sound_played = True
 
             mouse_pos = pygame.mouse.get_pos()
             mouse_pressed = pygame.mouse.get_pressed()
@@ -181,6 +264,9 @@ class Game:
 
     def intro_screen(self):
         intro = True
+
+        # Call intro sound
+        sounds.intro_sound.play()
 
         title = self.font.render('Void Step', True, config.white)
         title_rect = title.get_rect(x = 280, y = 200)
@@ -218,6 +304,9 @@ class Game:
         message_rect = message.get_rect(x = 200, y = 200)
         self.screen.blit(message, message_rect)
 
+        # Init game complete var
+        self.game_complete_sound_played = False
+
         # Create a button for replaying the game
         replay_game = game_button.Button(325, 350, 200, 50, config.black, config.white, 'Play Again', 32)
 
@@ -227,6 +316,13 @@ class Game:
                 if event.type == pygame.QUIT:
                     self.running = False
                     pygame.quit()
+
+            # Pause music and play game is complete sound
+            if not self.game_complete_sound_played:
+                pygame.mixer.music.pause()
+                sounds.portal_sound.stop()
+                # sounds.game_complete_sound.play()
+                self.game_complete_sound_played = True
 
             # Get mouse input
             mouse_pos = pygame.mouse.get_pos()
